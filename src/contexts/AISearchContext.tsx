@@ -103,9 +103,9 @@ export function AISearchProvider({ children }: { children: ReactNode }) {
       
       if (aiResponse) {
         // Simple parsing for free tier
-        const lines = aiResponse.split('\n').filter(line => line.trim());
-        const summaryLines = lines.filter(line => !line.includes('?'));
-        const questionLines = lines.filter(line => line.includes('?'));
+        const lines = aiResponse.split('\n').filter((line: string) => line.trim());
+        const summaryLines = lines.filter((line: string) => !line.includes('?'));
+        const questionLines = lines.filter((line: string) => line.includes('?'));
         
         setAISummary(summaryLines.join(' '));
         setAISuggestions(questionLines.slice(0, 2));

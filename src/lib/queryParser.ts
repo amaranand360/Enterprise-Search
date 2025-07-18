@@ -32,7 +32,8 @@ const CONTENT_TYPE_KEYWORDS: Record<ContentType, string[]> = {
   'calendar-event': ['meeting', 'event', 'calendar', 'appointment'],
   'contact': ['contact', 'person', 'user', 'colleague'],
   'note': ['note', 'notes', 'memo', 'reminder'],
-  'code': ['code', 'repository', 'repo', 'commit', 'branch']
+  'code': ['code', 'repository', 'repo', 'commit', 'branch'],
+  'ai-response': ['ai', 'assistant', 'response', 'answer', 'help']
 };
 
 // Action keywords

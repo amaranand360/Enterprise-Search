@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Search, Filter, SortAsc, Loader2, Lightbulb, Bot, Mic, TrendingUp, Clock, Zap, ArrowRight, ChevronDown, Cpu, Shield, BarChart3 } from 'lucide-react';
+import { Search, Filter, SortAsc, Loader2, Lightbulb, Bot, Mic, TrendingUp, Clock, Zap, ArrowRight, ChevronDown, Cpu, Shield, BarChart3, ArrowUp } from 'lucide-react';
 import { useScrollAnimation, useStaggeredAnimation } from '@/hooks/useScrollAnimation';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import { SearchProcessing } from '@/components/ui/SearchProcessing';
@@ -14,6 +14,7 @@ import { SearchFilters as SearchFiltersComponent } from './SearchFilters';
 import { SearchSuggestions } from './SearchSuggestions';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
 import { IconRenderer } from '@/components/ui/IconRenderer';
+import { ActionExecutor } from '@/components/actions/ActionExecutor';
 import { parseQuery, explainQuery } from '@/lib/queryParser';
 import { AIActionHandler } from '@/components/ai/AIActionHandler';
 import { demoConnectorManager } from '@/services/demo/DemoConnectorManager';
@@ -74,6 +75,8 @@ export function SearchInterface() {
     growthPercentage: 12,
     responseTime: 0.8
   });
+  const [showActionExecutor, setShowActionExecutor] = useState(false);
+  const [currentAction, setCurrentAction] = useState<string>('');
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { addToHistory, getRecentSearches, getPopularSearches } = useSearchHistory();
@@ -175,10 +178,35 @@ export function SearchInterface() {
     performSearch(suggestion);
   };
 
+  // Handle quick action clicks - populate search input
+  const handleQuickActionClick = (action: string) => {
+    setQuery(action);
+    setShowSuggestions(false);
+    // Focus the search input after setting the query
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  };
+
   // Perform search with AI-powered responses
   const performSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) return;
 
+    // Check if this is a Quick Action
+    const quickActions = [
+      'Send a email to team',
+      'Schedule meeting',
+      'Generate report',
+      'Create presentation',
+      'Find similar documents'
+    ];
+
+    if (quickActions.includes(searchQuery)) {
+      // This is a Quick Action - trigger the ActionExecutor
+      setCurrentAction(searchQuery);
+      setShowActionExecutor(true);
+      return;
+    }
 
     setIsLoading(true);
     setResults([]);
@@ -294,7 +322,8 @@ export function SearchInterface() {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !showSuggestions) {
       e.preventDefault();
-      debouncedSearch(query, filters);
+      setHasSearched(true);
+      performSearch(query);
     }
   };
 
@@ -355,12 +384,23 @@ export function SearchInterface() {
         {/* Hero Section */}
         <div className="border-b border-gray-200 dark:border-gray-700 transition-colors duration-200 sticky top-0 z-10 backdrop-blur-sm bg-white/95 dark:bg-gray-800/95">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-            <div className="text-center mb-6">
+            <div
+              className="text-center mb-6 cursor-pointer hover:opacity-80 transition-opacity duration-200"
+              onClick={() => {
+                // Reset to homepage state
+                setQuery('');
+                setResults([]);
+                setHasSearched(false);
+                setShowSuggestions(false);
+                setIsLoading(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
               <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-4 transition-all duration-200 animate-fade-in">
                 AI-Powered Enterprise Search
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto transition-colors duration-200 animate-fade-in-delay">
-                Search anything, get instant results, and boost your productivity
+                Search anything, Ask anything
               </p>
             </div>
 
@@ -385,7 +425,17 @@ export function SearchInterface() {
                   className="w-full pl-12 pr-48 py-4 text-lg border-2 border-gray-200 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-lg hover:shadow-xl transition-all duration-200 focus:shadow-xl"
                 />
                 <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
-                  <button className="p-2 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200">
+                  <button
+                    onClick={() => {
+                      if (query.trim()) {
+                        setShowSuggestions(false);
+                        setHasSearched(true);
+                        performSearch(query);
+                      }
+                    }}
+                    className="w-8 h-8 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600"
+                  >
+                    <ArrowUp className="h-4 w-4" />
                   </button>
 
                   {/* AI Model Selector */}
@@ -435,13 +485,7 @@ export function SearchInterface() {
                       </div>
                     )}
                   </div>
-
-                  <button
-                    onClick={() => performSearch(query)}
-                    className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg"
-                  >
-                    Search
-                  </button>
+               
                 </div>
               </div>
 
@@ -525,7 +569,7 @@ export function SearchInterface() {
                 ].map((item, index) => (
                   <button
                     key={index}
-                    onClick={() => handleSuggestionClick(item)}
+                    onClick={() => handleQuickActionClick(item)}
                     className="w-full text-left text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 px-2 py-1 rounded transition-colors"
                   >
                     {item}
@@ -756,17 +800,34 @@ export function SearchInterface() {
               type="text"
               value={query}
               onChange={(e) => handleSearch(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
               placeholder="Search anything..."
-              className="block w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
+              className="block w-full pl-10 pr-20 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
             />
-            {isLoading && (
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
-              </div>
-            )}
+
+            {/* Search Button */}
+            <div className="absolute inset-y-0 right-0 flex items-center">
+              {isLoading ? (
+                <div className="pr-3">
+                  <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (query.trim()) {
+                      setShowSuggestions(false);
+                      setHasSearched(true);
+                      performSearch(query);
+                    }
+                  }}
+                  className="mr-2 w-8 h-8 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600"
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </button>
+              )}
+            </div>
 
             {/* Search Suggestions */}
             <SearchSuggestions
@@ -875,6 +936,33 @@ export function SearchInterface() {
           parsedQuery={parsedQuery}
         />
       )}
+
+      {/* Action Executor - Shows step-by-step execution for Quick Actions */}
+      <ActionExecutor
+        action={currentAction}
+        isVisible={showActionExecutor}
+        onClose={() => setShowActionExecutor(false)}
+        onNewSearch={() => {
+          // Close action executor and focus on search input
+          setShowActionExecutor(false);
+          setQuery('');
+          setResults([]);
+          setHasSearched(false);
+          if (searchInputRef.current) {
+            searchInputRef.current.focus();
+          }
+        }}
+        onBackToHome={() => {
+          // Close action executor and reset to homepage
+          setShowActionExecutor(false);
+          setQuery('');
+          setResults([]);
+          setHasSearched(false);
+          setShowSuggestions(false);
+          setIsLoading(false);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
     </div>
   );
 }

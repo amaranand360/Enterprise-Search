@@ -17,7 +17,7 @@ export function IconRenderer({ icon, className = '', size = 16 }: IconRendererPr
   // If it's a React component, render it with proper props
   if (React.isValidElement(icon)) {
     // If it's already a React element, clone it with new props
-    return React.cloneElement(icon, { className, size });
+    return React.cloneElement(icon as React.ReactElement<any>, { className, size });
   }
 
   // If it's a component constructor, render it
@@ -32,7 +32,7 @@ export function renderIcon(icon: string | React.ComponentType<any>, className?: 
   }
 
   if (React.isValidElement(icon)) {
-    return React.cloneElement(icon, { className, size });
+    return React.cloneElement(icon as React.ReactElement<any>, { className, size });
   }
 
   const IconComponent = icon as React.ComponentType<any>;

@@ -98,12 +98,13 @@ export class JiraDemoConnector extends BaseDemoConnector {
     return this.issueTypes[Math.floor(Math.random() * this.issueTypes.length)];
   }
 
-  private getRandomStatus(): string {
+  protected getRandomStatus(): string {
     return this.statuses[Math.floor(Math.random() * this.statuses.length)];
   }
 
-  private getRandomPriority(): string {
-    return this.priorities[Math.floor(Math.random() * this.priorities.length)];
+  protected getRandomPriority(): 'low' | 'medium' | 'high' {
+    const priorities: ('low' | 'medium' | 'high')[] = ['low', 'medium', 'high'];
+    return priorities[Math.floor(Math.random() * priorities.length)];
   }
 
   private getRandomTitle(): string {

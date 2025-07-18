@@ -66,10 +66,16 @@ export function Header({ onSidebarToggle, sidebarOpen }: HeaderProps) {
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
+          <div
+            className="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm cursor-pointer hover:opacity-80 transition-opacity duration-200"
+            onClick={() => window.location.href = '/'}
+          >
             <span className="text-white font-bold text-sm">ES</span>
           </div>
-          <div className="hidden sm:block">
+          <div
+            className="hidden sm:block cursor-pointer hover:opacity-80 transition-opacity duration-200"
+            onClick={() => window.location.href = '/'}
+          >
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">
               Enterprise Search
             </h1>
@@ -102,37 +108,7 @@ export function Header({ onSidebarToggle, sidebarOpen }: HeaderProps) {
           </span>
         </button>
 
-        {/* Theme Toggle */}
-        <button
-          onClick={() => {
-            const html = document.documentElement;
-            const isDark = html.classList.contains('dark');
-            if (isDark) {
-              // Switch to light theme
-              html.classList.remove('dark');
-              html.style.colorScheme = 'light';
-              localStorage.setItem('theme', 'light');
-              // Update meta theme color
-              const metaTheme = document.querySelector('meta[name="theme-color"]');
-              if (metaTheme) metaTheme.setAttribute('content', '#ffffff');
-            } else {
-              // Switch to dark theme
-              html.classList.add('dark');
-              html.style.colorScheme = 'dark';
-              localStorage.setItem('theme', 'dark');
-              // Update meta theme color
-              const metaTheme = document.querySelector('meta[name="theme-color"]');
-              if (metaTheme) metaTheme.setAttribute('content', '#1f2937');
-            }
-          }}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 group"
-          title="Toggle theme"
-        >
-          <div className="h-5 w-5 text-gray-600 dark:text-gray-300 transition-all duration-200 group-hover:scale-110">
-            <span className="dark:hidden">🌙</span>
-            <span className="hidden dark:inline">☀️</span>
-          </div>
-        </button>
+      
 
         {/* Settings */}
         <button
