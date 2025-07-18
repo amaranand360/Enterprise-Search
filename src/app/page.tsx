@@ -9,8 +9,8 @@ import { ConnectionRetryHandler, ConnectionHealthMonitor, useAutoRetry } from '@
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'search' | 'knowledge'>('search');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
   // Enable auto-retry for failed connections
   useAutoRetry(true, 60000); // Retry every minute

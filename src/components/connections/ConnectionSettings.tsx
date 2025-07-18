@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Settings, Save, RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal, ModalFooter } from '@/components/ui/Modal';
+import { IconRenderer } from '@/components/ui/IconRenderer';
 import { connectionStatusService } from '@/services/ConnectionStatusService';
 import { ALL_TOOLS } from '@/lib/config';
 
@@ -152,7 +153,7 @@ export function ConnectionSettings({ isOpen, onClose }: ConnectionSettingsProps)
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm"
                     style={{ backgroundColor: tool.color }}
                   >
-                    {tool.icon}
+                    <IconRenderer icon={tool.icon} className="text-white" size={16} />
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900 dark:text-white">{tool.name}</h4>

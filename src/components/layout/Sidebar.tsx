@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Search, Database, Plus, Wifi, WifiOff, Loader2, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ALL_TOOLS, TOOL_CATEGORIES } from '@/lib/config';
+import { IconRenderer } from '@/components/ui/IconRenderer';
 import { Tool } from '@/types';
 import { ConnectionModal } from '@/components/connections/ConnectionModal';
 import { demoConnectorManager } from '@/services/demo/DemoConnectorManager';
@@ -234,7 +235,7 @@ function SearchSidebarContent({
               className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm mx-auto"
               style={{ backgroundColor: tool.color }}
             >
-              {tool.icon}
+              <IconRenderer icon={tool.icon} className="text-white" size={16} />
             </div>
           </button>
         ))}
@@ -249,7 +250,7 @@ function SearchSidebarContent({
               className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm mx-auto"
               style={{ backgroundColor: tool.color }}
             >
-              {tool.icon}
+              <IconRenderer icon={tool.icon} className="text-white" size={16} />
             </div>
           </button>
         ))}
@@ -326,7 +327,7 @@ function KnowledgeSidebarContent({ connectedTools, isExpanded }: KnowledgeSideba
             title={`${TOOL_CATEGORIES[category as keyof typeof TOOL_CATEGORIES]?.name} (${tools.length})`}
           >
             <span className="text-lg">
-              {TOOL_CATEGORIES[category as keyof typeof TOOL_CATEGORIES]?.icon}
+              <IconRenderer icon={TOOL_CATEGORIES[category as keyof typeof TOOL_CATEGORIES]?.icon} size={18} />
             </span>
           </div>
         ))}
@@ -349,13 +350,13 @@ function KnowledgeSidebarContent({ connectedTools, isExpanded }: KnowledgeSideba
       {Object.entries(toolsByCategory).map(([category, tools]) => (
         <div key={category}>
           <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-            <span>{TOOL_CATEGORIES[category as keyof typeof TOOL_CATEGORIES]?.icon}</span>
+            <IconRenderer icon={TOOL_CATEGORIES[category as keyof typeof TOOL_CATEGORIES]?.icon} size={16} />
             {TOOL_CATEGORIES[category as keyof typeof TOOL_CATEGORIES]?.name}
           </h4>
           <div className="space-y-1">
             {tools.map(tool => (
               <div key={tool.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                <span className="text-lg">{tool.icon}</span>
+                <IconRenderer icon={tool.icon} className="text-lg" size={18} />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{tool.name}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -380,17 +381,12 @@ interface ToolItemProps {
 function ToolItem({ tool, onToggle, isExpanded }: ToolItemProps) {
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-      <span className="text-xl">{tool.icon}</span>
+      <IconRenderer icon={tool.icon} className="text-xl" size={20} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
             {tool.name}
           </p>
-          {tool.isDemo && (
-            <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-2 py-0.5 rounded">
-              Demo
-            </span>
-          )}
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
           {tool.description}

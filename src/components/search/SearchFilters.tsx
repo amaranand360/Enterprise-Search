@@ -5,6 +5,7 @@ import { X, Calendar, User, Filter } from 'lucide-react';
 import { SearchFilters as SearchFiltersType, ContentType } from '@/types';
 import { ALL_TOOLS, TOOL_CATEGORIES } from '@/lib/config';
 import { cn } from '@/lib/utils';
+import { IconRenderer } from '@/components/ui/IconRenderer';
 
 interface SearchFiltersProps {
   filters: SearchFiltersType;
@@ -130,7 +131,7 @@ export function SearchFilters({ filters, onFiltersChange }: SearchFiltersProps) 
                   : "hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300"
               )}
             >
-              <span className="text-base">{tool.icon}</span>
+              <IconRenderer icon={tool.icon} className="text-base" size={16} />
               <span className="truncate">{tool.name}</span>
             </button>
           ))}
@@ -222,7 +223,7 @@ export function SearchFilters({ filters, onFiltersChange }: SearchFiltersProps) 
                   key={toolId}
                   className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded text-xs"
                 >
-                  <span>{tool.icon}</span>
+                  <IconRenderer icon={tool.icon} size={14} />
                   {tool.name}
                   <button
                     onClick={() => handleToolToggle(toolId)}

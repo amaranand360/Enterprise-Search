@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, RefreshCw, X, Wifi } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { connectionStatusService } from '@/services/ConnectionStatusService';
+import { IconRenderer } from '@/components/ui/IconRenderer';
 import { Connection } from '@/types';
 import { ALL_TOOLS } from '@/lib/config';
 
@@ -111,7 +112,7 @@ export function ConnectionRetryHandler({ onRetrySuccess }: ConnectionRetryHandle
                 className="flex items-center justify-between p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded"
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <span className="text-lg">{tool.icon}</span>
+                  <IconRenderer icon={tool.icon} className="text-lg" size={18} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                       {tool.name}

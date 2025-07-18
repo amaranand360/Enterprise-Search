@@ -5,6 +5,7 @@ import { CheckCircle, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 import { Modal, ModalFooter } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Tool } from '@/types';
+import { IconRenderer } from '@/components/ui/IconRenderer';
 import { sleep, randomDelay } from '@/lib/utils';
 import { GoogleConnection } from './GoogleConnection';
 import { GOOGLE_TOOLS } from '@/lib/config';
@@ -87,7 +88,7 @@ export function ConnectionModal({
               className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl text-white"
               style={{ backgroundColor: tool.color }}
             >
-              {tool.icon}
+              <IconRenderer icon={tool.icon} className="text-white" size={24} />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               Connect to {tool.name}

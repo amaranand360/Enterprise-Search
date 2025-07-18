@@ -1,11 +1,38 @@
 import { Tool, ToolCategory } from '@/types';
+import {
+  Mail,
+  Calendar,
+  HardDrive,
+  FileSpreadsheet,
+  Video,
+  MessageSquare,
+  Users,
+  Folder,
+  FileText,
+  BarChart3,
+  Zap,
+  Code,
+  Clipboard
+} from 'lucide-react';
+
+// Import brand icons from React Icons
+import {
+  SiSlack,
+  SiDiscord,
+  SiJira,
+  SiAsana,
+  SiTrello,
+  SiGithub,
+  SiGitlab,
+  SiBitbucket
+} from 'react-icons/si';
 
 export const GOOGLE_TOOLS: Tool[] = [
   {
     id: 'gmail',
     name: 'Gmail',
     category: 'communication',
-    icon: '📧',
+    icon: Mail,
     color: '#EA4335',
     isConnected: false,
     isDemo: false,
@@ -17,7 +44,7 @@ export const GOOGLE_TOOLS: Tool[] = [
     id: 'google-calendar',
     name: 'Google Calendar',
     category: 'productivity',
-    icon: '📅',
+    icon: Calendar,
     color: '#4285F4',
     isConnected: false,
     isDemo: false,
@@ -29,7 +56,7 @@ export const GOOGLE_TOOLS: Tool[] = [
     id: 'google-drive',
     name: 'Google Drive',
     category: 'file-storage',
-    icon: '💾',
+    icon: HardDrive,
     color: '#0F9D58',
     isConnected: false,
     isDemo: false,
@@ -41,7 +68,7 @@ export const GOOGLE_TOOLS: Tool[] = [
     id: 'google-sheets',
     name: 'Google Sheets',
     category: 'productivity',
-    icon: '📊',
+    icon: FileSpreadsheet,
     color: '#0F9D58',
     isConnected: false,
     isDemo: false,
@@ -53,7 +80,7 @@ export const GOOGLE_TOOLS: Tool[] = [
     id: 'google-meet',
     name: 'Google Meet',
     category: 'communication',
-    icon: '🎥',
+    icon: Video,
     color: '#00832D',
     isConnected: false,
     isDemo: false,
@@ -69,7 +96,7 @@ export const DEMO_TOOLS: Tool[] = [
     id: 'slack',
     name: 'Slack',
     category: 'communication',
-    icon: '💬',
+    icon: SiSlack,
     color: '#4A154B',
     isConnected: false,
     isDemo: true,
@@ -81,7 +108,7 @@ export const DEMO_TOOLS: Tool[] = [
     id: 'microsoft-teams',
     name: 'Microsoft Teams',
     category: 'communication',
-    icon: '👥',
+    icon: Users,
     color: '#6264A7',
     isConnected: false,
     isDemo: true,
@@ -93,7 +120,7 @@ export const DEMO_TOOLS: Tool[] = [
     id: 'discord',
     name: 'Discord',
     category: 'communication',
-    icon: '🎮',
+    icon: SiDiscord,
     color: '#5865F2',
     isConnected: false,
     isDemo: true,
@@ -107,7 +134,7 @@ export const DEMO_TOOLS: Tool[] = [
     id: 'jira',
     name: 'Jira',
     category: 'project-management',
-    icon: '🎯',
+    icon: SiJira,
     color: '#0052CC',
     isConnected: false,
     isDemo: true,
@@ -119,7 +146,7 @@ export const DEMO_TOOLS: Tool[] = [
     id: 'asana',
     name: 'Asana',
     category: 'project-management',
-    icon: '✅',
+    icon: SiAsana,
     color: '#F06A6A',
     isConnected: false,
     isDemo: true,
@@ -131,7 +158,7 @@ export const DEMO_TOOLS: Tool[] = [
     id: 'monday',
     name: 'Monday.com',
     category: 'project-management',
-    icon: '📋',
+    icon: Clipboard,
     color: '#FF3D57',
     isConnected: false,
     isDemo: true,
@@ -143,7 +170,7 @@ export const DEMO_TOOLS: Tool[] = [
     id: 'trello',
     name: 'Trello',
     category: 'project-management',
-    icon: '📌',
+    icon: SiTrello,
     color: '#0079BF',
     isConnected: false,
     isDemo: true,
@@ -157,7 +184,7 @@ export const DEMO_TOOLS: Tool[] = [
     id: 'github',
     name: 'GitHub',
     category: 'development',
-    icon: '🐙',
+    icon: SiGithub,
     color: '#181717',
     isConnected: false,
     isDemo: true,
@@ -169,7 +196,7 @@ export const DEMO_TOOLS: Tool[] = [
     id: 'gitlab',
     name: 'GitLab',
     category: 'development',
-    icon: '🦊',
+    icon: SiGitlab,
     color: '#FC6D26',
     isConnected: false,
     isDemo: true,
@@ -181,7 +208,7 @@ export const DEMO_TOOLS: Tool[] = [
     id: 'bitbucket',
     name: 'Bitbucket',
     category: 'development',
-    icon: '🪣',
+    icon: SiBitbucket,
     color: '#0052CC',
     isConnected: false,
     isDemo: true,
@@ -193,15 +220,15 @@ export const DEMO_TOOLS: Tool[] = [
 
 export const ALL_TOOLS = [...GOOGLE_TOOLS, ...DEMO_TOOLS];
 
-export const TOOL_CATEGORIES: Record<ToolCategory, { name: string; icon: string; color: string }> = {
-  'communication': { name: 'Communication', icon: '💬', color: '#4A90E2' },
-  'project-management': { name: 'Project Management', icon: '📋', color: '#F5A623' },
-  'development': { name: 'Development', icon: '💻', color: '#7ED321' },
-  'documentation': { name: 'Documentation', icon: '📚', color: '#9013FE' },
-  'file-storage': { name: 'File Storage', icon: '📁', color: '#FF6B6B' },
-  'productivity': { name: 'Productivity', icon: '⚡', color: '#4ECDC4' },
-  'crm': { name: 'CRM', icon: '👥', color: '#FF9500' },
-  'analytics': { name: 'Analytics', icon: '📊', color: '#5AC8FA' }
+export const TOOL_CATEGORIES: Record<ToolCategory, { name: string; icon: React.ComponentType<any>; color: string }> = {
+  'communication': { name: 'Communication', icon: MessageSquare, color: '#4A90E2' },
+  'project-management': { name: 'Project Management', icon: Clipboard, color: '#F5A623' },
+  'development': { name: 'Development', icon: Code, color: '#7ED321' },
+  'documentation': { name: 'Documentation', icon: FileText, color: '#9013FE' },
+  'file-storage': { name: 'File Storage', icon: Folder, color: '#FF6B6B' },
+  'productivity': { name: 'Productivity', icon: Zap, color: '#4ECDC4' },
+  'crm': { name: 'CRM', icon: Users, color: '#FF9500' },
+  'analytics': { name: 'Analytics', icon: BarChart3, color: '#5AC8FA' }
 };
 
 export const GOOGLE_OAUTH_CONFIG = {

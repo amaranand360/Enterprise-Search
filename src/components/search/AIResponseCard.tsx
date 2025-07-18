@@ -1,7 +1,7 @@
 'use client';
 
 import { SearchResult } from '@/types';
-import { Bot, Copy, ThumbsUp, ThumbsDown, Sparkles } from 'lucide-react';
+import { Bot, Copy, ThumbsUp, ThumbsDown, Sparkles, Play, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 
 interface AIResponseCardProps {
@@ -11,6 +11,8 @@ interface AIResponseCardProps {
 export function AIResponseCard({ result }: AIResponseCardProps) {
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [executionComplete, setExecutionComplete] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -27,6 +29,33 @@ export function AIResponseCard({ result }: AIResponseCardProps) {
     // Here you could send feedback to your analytics
     console.log(`AI response feedback: ${type}`);
   };
+
+  const handleTaskExecution = async () => {
+    setIsExecuting(true);
+
+    // Simulate task execution
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setExecutionComplete(true);
+      setIsExecuting(false);
+
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setExecutionComplete(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Task execution failed:', error);
+      setIsExecuting(false);
+    }
+  };
+
+  // Check if this is a task-related response
+  const isTaskResponse = result.metadata?.isTaskExecution ||
+    result.content.toLowerCase().includes('step') ||
+    result.content.toLowerCase().includes('task') ||
+    result.content.toLowerCase().includes('create') ||
+    result.content.toLowerCase().includes('schedule') ||
+    result.content.toLowerCase().includes('generate');
 
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border-2 border-blue-200 dark:border-blue-800 p-6 mb-6">
@@ -60,24 +89,57 @@ export function AIResponseCard({ result }: AIResponseCardProps) {
           >
             <Copy className={`h-4 w-4 ${copied ? 'text-green-600' : 'text-gray-500'}`} />
           </button>
-          
+
+          {/* Task Execution Button */}
+          {isTaskResponse && (
+            <button
+              onClick={handleTaskExecution}
+              disabled={isExecuting}
+              className={`flex items-center gap-1 px-3 py-1 rounded-lg transition-colors text-sm font-medium ${
+                executionComplete
+                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                  : isExecuting
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                  : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50'
+              }`}
+              title={executionComplete ? 'Task completed' : isExecuting ? 'Executing task...' : 'Execute task'}
+            >
+              {executionComplete ? (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Done</span>
+                </>
+              ) : isExecuting ? (
+                <>
+                  <div className="h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Executing...</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4" />
+                  <span>Execute</span>
+                </>
+              )}
+            </button>
+          )}
+
           <button
             onClick={() => handleFeedback('up')}
             className={`p-2 rounded-lg transition-colors ${
-              feedback === 'up' 
-                ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' 
+              feedback === 'up'
+                ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
                 : 'hover:bg-blue-100 dark:hover:bg-blue-800/50 text-gray-500'
             }`}
             title="Good response"
           >
             <ThumbsUp className="h-4 w-4" />
           </button>
-          
+
           <button
             onClick={() => handleFeedback('down')}
             className={`p-2 rounded-lg transition-colors ${
-              feedback === 'down' 
-                ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' 
+              feedback === 'down'
+                ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
                 : 'hover:bg-blue-100 dark:hover:bg-blue-800/50 text-gray-500'
             }`}
             title="Poor response"

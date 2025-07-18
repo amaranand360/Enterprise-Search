@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { BarChart3, Settings, Users, Clock, TrendingUp, Database, Zap } from 'lucide-react';
 import { ALL_TOOLS, TOOL_CATEGORIES } from '@/lib/config';
 import { formatRelativeTime } from '@/lib/utils';
+import { IconRenderer } from '@/components/ui/IconRenderer';
 
 export function KnowledgeTab() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -108,7 +109,7 @@ export function KnowledgeTab() {
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
               >
-                <span>{category.icon}</span>
+                <IconRenderer icon={category.icon} size={16} />
                 {category.name}
               </button>
             ))}
@@ -172,7 +173,7 @@ export function KnowledgeTab() {
                   <span className="text-sm text-gray-500 dark:text-gray-400 w-4">
                     {index + 1}
                   </span>
-                  <span className="text-lg">{tool.icon}</span>
+                  <IconRenderer icon={tool.icon} className="text-lg" size={18} />
                   <span className="flex-1 text-sm font-medium text-gray-900 dark:text-white">
                     {tool.name}
                   </span>
@@ -243,7 +244,7 @@ function ToolCard({ tool }: ToolCardProps) {
     <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">{tool.icon}</span>
+          <IconRenderer icon={tool.icon} className="text-2xl" size={24} />
           <div>
             <h4 className="font-medium text-gray-900 dark:text-white">
               {tool.name}

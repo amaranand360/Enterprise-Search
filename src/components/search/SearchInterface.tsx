@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Search, Filter, SortAsc, Loader2, Lightbulb, Bot, Mic, TrendingUp, Clock, Zap, ArrowRight, ChevronDown, Cpu } from 'lucide-react';
+import { Search, Filter, SortAsc, Loader2, Lightbulb, Bot, Mic, TrendingUp, Clock, Zap, ArrowRight, ChevronDown, Cpu, Shield, BarChart3 } from 'lucide-react';
 import { useScrollAnimation, useStaggeredAnimation } from '@/hooks/useScrollAnimation';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import { SearchProcessing } from '@/components/ui/SearchProcessing';
@@ -13,6 +13,7 @@ import { SearchResultCard } from './SearchResultCard';
 import { SearchFilters as SearchFiltersComponent } from './SearchFilters';
 import { SearchSuggestions } from './SearchSuggestions';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
+import { IconRenderer } from '@/components/ui/IconRenderer';
 import { parseQuery, explainQuery } from '@/lib/queryParser';
 import { AIActionHandler } from '@/components/ai/AIActionHandler';
 import { demoConnectorManager } from '@/services/demo/DemoConnectorManager';
@@ -111,25 +112,34 @@ export function SearchInterface() {
         ...searchFilters
       };
 
-      // Search using demo connector manager for connected tools
+      // Search using demo connector manager (AI disabled for debugging)
       try {
+        const allResults: SearchResult[] = [];
+
+        // Use demo results for debounced search to avoid rate limiting
+
+        // Get demo results
         const demoResults = await demoConnectorManager.searchAllConnectedTools({
           query: parsed.cleanQuery || searchQuery,
-          maxResults: 20,
+          maxResults: 15,
           contentTypes: combinedFilters.contentTypes,
           dateRange: combinedFilters.dateRange
         });
 
         // Combine with fallback demo results
-        const fallbackResults = generateDemoSearchResults(parsed.cleanQuery || searchQuery, 10);
-        const allResults = [...demoResults, ...fallbackResults];
+        const fallbackResults = generateDemoSearchResults(parsed.cleanQuery || searchQuery, 5);
+        allResults.push(...demoResults, ...fallbackResults);
 
-        // Remove duplicates and sort by relevance
+        // Remove duplicates and sort by relevance (AI response first)
         const uniqueResults = allResults.filter((result, index, self) =>
           index === self.findIndex(r => r.id === result.id)
         );
 
-        setResults(uniqueResults.sort((a, b) => b.relevanceScore - a.relevanceScore));
+        setResults(uniqueResults.sort((a, b) => {
+          if (a.type === 'ai-response') return -1;
+          if (b.type === 'ai-response') return 1;
+          return b.relevanceScore - a.relevanceScore;
+        }));
       } catch (error) {
         console.error('Search failed:', error);
         // Fallback to demo data
@@ -141,8 +151,8 @@ export function SearchInterface() {
 
       // Add to search history
       addToHistory(searchQuery, results.length);
-    }, 300),
-    [addToHistory]
+    }, 300), // Reduced debounce for debugging
+    [addToHistory, selectedModel]
   );
 
   const handleSearch = (value: string) => {
@@ -169,87 +179,93 @@ export function SearchInterface() {
   const performSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) return;
 
+
     setIsLoading(true);
     setResults([]);
 
     try {
-      // Call OpenAI API for intelligent response
-      const aiResponse = await fetch('/api/openai', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an AI assistant for an enterprise search system. Provide helpful, accurate, and concise responses to user queries. If the query is about searching for documents, data, or information, provide guidance on how to find what they need.'
-            },
-            {
-              role: 'user',
-              content: searchQuery
+      let aiResult: SearchResult | null = null;
+
+      // Try to call OpenAI API for intelligent response
+      try {
+        const aiResponse = await fetch('/api/openai', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'system',
+                content: 'You are an AI assistant for an enterprise search system. Provide helpful, accurate, and concise responses to user queries. If the query is about searching for documents, data, or information, provide guidance on how to find what they need.'
+              },
+              {
+                role: 'user',
+                content: searchQuery
+              }
+            ],
+            model: 'gpt-4o-mini',
+            max_tokens: 500,
+            temperature: 0.7
+          })
+        });
+
+        const aiData = await aiResponse.json();
+
+        if (aiData.content && !aiData.error) {
+          // Create AI response as a special search result
+          const aiTool: Tool = {
+            id: 'ai-assistant',
+            name: 'AI Assistant',
+            category: 'productivity',
+            icon: Bot,
+            color: '#3B82F6',
+            isConnected: true,
+            isDemo: false,
+            connectionStatus: 'connected',
+            description: 'AI-powered assistant using GPT-4o-mini',
+            features: ['Natural Language Processing', 'Smart Responses', 'Query Understanding']
+          };
+
+          aiResult = {
+            id: 'ai-response',
+            title: 'AI Assistant Response',
+            content: aiData.content,
+            tool: aiTool,
+            type: 'ai-response',
+            url: '#',
+            timestamp: new Date(),
+            relevanceScore: 1.0,
+            author: 'AI Assistant',
+            metadata: {
+              model: 'gpt-4o-mini', // Always use this model regardless of UI selection
+              selectedModel: selectedModel, // Show what user selected in UI
+              usage: aiData.usage
             }
-          ],
-          model: 'gpt-4o-mini',
-          max_tokens: 500,
-          temperature: 0.7
-        })
-      });
-
-      const aiData = await aiResponse.json();
-
-      if (aiData.content) {
-        // Create AI response as a special search result
-        const aiTool: Tool = {
-          id: 'ai-assistant',
-          name: 'AI Assistant',
-          category: 'productivity',
-          icon: '🤖',
-          color: '#3B82F6',
-          isConnected: true,
-          isDemo: false,
-          connectionStatus: 'connected',
-          description: 'AI-powered assistant using GPT-4o-mini',
-          features: ['Natural Language Processing', 'Smart Responses', 'Query Understanding']
-        };
-
-        const aiResult: SearchResult = {
-          id: 'ai-response',
-          title: 'AI Assistant Response',
-          content: aiData.content,
-          tool: aiTool,
-          type: 'ai-response',
-          url: '#',
-          timestamp: new Date(),
-          relevanceScore: 1.0,
-          author: 'AI Assistant',
-          metadata: {
-            model: 'gpt-4o-mini', // Always use this model regardless of UI selection
-            selectedModel: selectedModel, // Show what user selected in UI
-            usage: aiData.usage
-          }
-        };
-
-        // Also generate some demo search results for context
-        const demoResults = generateDemoSearchResults(searchQuery, 3);
-
-        // Combine AI response with demo results
-        setResults([aiResult, ...demoResults]);
-      } else {
-        // Fallback to demo results if AI fails
-        const searchResults = generateDemoSearchResults(searchQuery, 10);
-        setResults(searchResults);
+          };
+        }
+      } catch (aiError) {
+        console.error('AI API call failed:', aiError);
       }
+
+      // Always generate demo results
+      const demoResults = generateDemoSearchResults(searchQuery, aiResult ? 5 : 10);
+
+      // Combine AI response with demo results (if AI succeeded)
+      const finalResults = aiResult ? [aiResult, ...demoResults] : demoResults;
+      setResults(finalResults);
+
+
 
       // Parse the query for natural language processing
       const parsed = parseQuery(searchQuery);
       setParsedQuery(parsed);
 
       // Add to search history
-      addToHistory(searchQuery, results.length);
+      addToHistory(searchQuery, finalResults.length);
     } catch (error) {
-      console.error('Search failed:', error);
-      // Fallback to demo results on error
+      console.error('Search failed completely:', error);
+      // Always provide fallback demo results
       const searchResults = generateDemoSearchResults(searchQuery, 10);
       setResults(searchResults);
     } finally {
@@ -270,7 +286,9 @@ export function SearchInterface() {
 
   const handleInputBlur = () => {
     // Delay hiding suggestions to allow for clicks
-    setTimeout(() => setShowSuggestions(false), 200);
+    setTimeout(() => {
+      setShowSuggestions(false);
+    }, 300);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -297,7 +315,7 @@ export function SearchInterface() {
   const trendingSearches = [
     { query: 'Q4 budget planning', count: 145 },
     { query: 'Team performance metrics', count: 89 },
-    { query: 'Product roadmap 2024', count: 73 },
+    { query: 'Product roadmap 2025', count: 73 },
     { query: 'Marketing campaign analysis', count: 62 }
   ];
 
@@ -368,7 +386,6 @@ export function SearchInterface() {
                 />
                 <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
                   <button className="p-2 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200">
-                    <Mic className="h-5 w-5" />
                   </button>
 
                   {/* AI Model Selector */}
@@ -452,7 +469,9 @@ export function SearchInterface() {
                 {[
                   'Q4 budget planning',
                   'Team performance metrics',
-                  'Product roadmap 2024'
+                  'Product roadmap 2025',
+                  'Marketing campaign analysis',
+                  'Client feedback from yesterday'
                 ].map((item, index) => (
                   <button
                     key={index}
@@ -475,7 +494,9 @@ export function SearchInterface() {
                 {[
                   'Marketing campaign analysis',
                   'Client feedback review',
-                  'Weekly team sync'
+                  'Weekly team sync',
+                  'Quarterly budget planning',
+                  'Product roadmap 2025'
                 ].map((item, index) => (
                   <button
                     key={index}
@@ -496,9 +517,11 @@ export function SearchInterface() {
               </div>
               <div className="space-y-2">
                 {[
-                  'Create presentation',
+                  'Send a email to team',
                   'Schedule meeting',
-                  'Generate report'
+                  'Generate report',
+                  'Create presentation',
+                  'Find similar documents'
                 ].map((item, index) => (
                   <button
                     key={index}
@@ -666,17 +689,17 @@ export function SearchInterface() {
                 description: 'Get results in milliseconds with our advanced indexing technology'
               },
               {
-                icon: '🔒',
+                icon: Shield,
                 title: 'Enterprise Security',
                 description: 'Bank-level security with role-based access controls'
               },
               {
-                icon: '🤖',
+                icon: Bot,
                 title: 'AI-Powered',
                 description: 'Smart suggestions and natural language understanding'
               },
               {
-                icon: '📊',
+                icon: BarChart3,
                 title: 'Analytics',
                 description: 'Detailed insights into search patterns and usage'
               },
@@ -696,7 +719,7 @@ export function SearchInterface() {
                 className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-200 group"
               >
                 <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-200">
-                  {feature.icon}
+                  <IconRenderer icon={feature.icon} size={32} />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   {feature.title}

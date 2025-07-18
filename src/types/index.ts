@@ -12,7 +12,7 @@ export interface Tool {
   id: string;
   name: string;
   category: ToolCategory;
-  icon: string;
+  icon: string | React.ComponentType<any>;
   color: string;
   isConnected: boolean;
   isDemo: boolean;

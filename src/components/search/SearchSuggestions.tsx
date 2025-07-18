@@ -28,22 +28,32 @@ export function SearchSuggestions({
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
-  // Mock recent searches
+  // Enhanced recent searches with more variety
   const recentSearches = [
     'Q4 budget planning',
     'Team performance metrics',
-    'Product roadmap 2024',
+    'Product roadmap 2025',
     'Marketing campaign analysis',
-    'Client feedback from yesterday'
+    'Client feedback from yesterday',
+    'Weekly team sync notes',
+    'Project status update',
+    'Sales pipeline review',
+    'User research findings',
+    'Technical documentation'
   ];
 
-  // Mock popular searches
+  // Enhanced popular searches with more variety
   const popularSearches = [
     'Create presentation from meeting notes',
     'Schedule weekly team sync',
     'Generate expense report',
     'Find similar documents to current project',
-    'Summarize email thread from yesterday'
+    'Summarize email thread from yesterday',
+    'Draft project proposal',
+    'Review quarterly goals',
+    'Analyze customer feedback',
+    'Update team dashboard',
+    'Prepare status report'
   ];
 
   // Mock tags
@@ -183,7 +193,11 @@ export function SearchSuggestions({
         {suggestions.map((suggestion, index) => (
           <button
             key={suggestion.id}
-            onClick={() => onSuggestionSelect(suggestion.text)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onSuggestionSelect(suggestion.text);
+            }}
             className={cn(
               "w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors",
               selectedIndex === index && "bg-blue-50 dark:bg-blue-900/20"

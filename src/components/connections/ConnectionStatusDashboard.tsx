@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { IconRenderer } from '@/components/ui/IconRenderer';
 import { connectionStatusService, ConnectionHealth, ConnectionStats } from '@/services/ConnectionStatusService';
 import { Connection } from '@/types';
 import { ALL_TOOLS } from '@/lib/config';
@@ -214,7 +215,7 @@ export function ConnectionStatusDashboard({ isOpen, onClose }: ConnectionStatusD
                         className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-lg"
                         style={{ backgroundColor: tool.color }}
                       >
-                        {tool.icon}
+                        <IconRenderer icon={tool.icon} className="text-white" size={18} />
                       </div>
                       
                       <div className="flex-1">
@@ -228,9 +229,6 @@ export function ConnectionStatusDashboard({ isOpen, onClose }: ConnectionStatusD
                           >
                             {connection.status}
                           </Badge>
-                          {tool.isDemo && (
-                            <Badge variant="secondary" size="sm">Demo</Badge>
-                          )}
                         </div>
                         
                         <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">

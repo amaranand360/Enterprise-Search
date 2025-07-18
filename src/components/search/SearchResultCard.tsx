@@ -3,6 +3,7 @@
 import { ExternalLink, Calendar, User, Tag } from 'lucide-react';
 import { SearchResult } from '@/types';
 import { formatRelativeTime, highlightSearchTerm, truncateText } from '@/lib/utils';
+import { IconRenderer } from '@/components/ui/IconRenderer';
 
 interface SearchResultCardProps {
   result: SearchResult;
@@ -42,7 +43,7 @@ export function SearchResultCard({ result, query }: SearchResultCardProps) {
             className="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm font-medium"
             style={{ backgroundColor: result.tool.color }}
           >
-            {result.tool.icon}
+            <IconRenderer icon={result.tool.icon} className="text-white" size={16} />
           </div>
           
           {/* Tool and Content Type */}
