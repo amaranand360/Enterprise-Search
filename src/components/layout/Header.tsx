@@ -108,7 +108,17 @@ export function Header({ onSidebarToggle, sidebarOpen }: HeaderProps) {
           </span>
         </button>
 
-      
+        {/* Theme Toggle */}
+        <button
+       
+          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 group"
+          title="Toggle theme"
+        >
+          <div className="h-5 w-5 text-gray-600 dark:text-gray-300 transition-all duration-200 group-hover:scale-110">
+            <span className="dark:hidden">🌙</span>
+            <span className="hidden dark:inline">☀️</span>
+          </div>
+        </button>
 
         {/* Settings */}
         <button
