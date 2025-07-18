@@ -380,9 +380,9 @@ export function SearchInterface() {
   if (!hasSearched) {
     // Homepage/Dashboard view
     return (
-      <div className="flex-1 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 overflow-y-auto">
+      <div className="flex-1 bg-gray-900 transition-colors duration-200 overflow-y-auto">
         {/* Hero Section */}
-        <div className="border-b border-gray-200 dark:border-gray-700 transition-colors duration-200 sticky top-0 z-10 backdrop-blur-sm bg-white/95 dark:bg-gray-800/95">
+        <div className="border-b border-gray-700 transition-colors duration-200 sticky top-0 z-10 backdrop-blur-sm bg-gray-800/95">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
             <div
               className="text-center mb-6 cursor-pointer hover:opacity-80 transition-opacity duration-200"
@@ -396,10 +396,10 @@ export function SearchInterface() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-4 transition-all duration-200 animate-fade-in">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-4 transition-all duration-200 animate-fade-in">
                 AI-Powered Enterprise Search
               </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto transition-colors duration-200 animate-fade-in-delay">
+              <p className="text-lg text-gray-400 max-w-2xl mx-auto transition-colors duration-200 animate-fade-in-delay">
                 Search anything, Ask anything
               </p>
             </div>

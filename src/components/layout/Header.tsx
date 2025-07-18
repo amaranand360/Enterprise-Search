@@ -7,12 +7,9 @@ import { ConnectionStatusDashboard } from '@/components/connections/ConnectionSt
 import { ConnectionSettings } from '@/components/connections/ConnectionSettings';
 import { connectionStatusService, ConnectionStats } from '@/services/ConnectionStatusService';
 
-interface HeaderProps {
-  onSidebarToggle: () => void;
-  sidebarOpen: boolean;
-}
+interface HeaderProps {}
 
-export function Header({ onSidebarToggle, sidebarOpen }: HeaderProps) {
+export function Header({}: HeaderProps) {
   const [showConnectionDashboard, setShowConnectionDashboard] = useState(false);
   const [showConnectionSettings, setShowConnectionSettings] = useState(false);
   const [connectionStats, setConnectionStats] = useState<ConnectionStats | null>(null);
@@ -58,12 +55,7 @@ export function Header({ onSidebarToggle, sidebarOpen }: HeaderProps) {
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 lg:px-6 transition-colors duration-200">
       {/* Left side */}
       <div className="flex items-center gap-4">
-        <button
-          onClick={onSidebarToggle}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
-          aria-label="Toggle sidebar"
-        >
-        </button>
+
 
         <div className="flex items-center gap-3">
           <div
@@ -109,16 +101,7 @@ export function Header({ onSidebarToggle, sidebarOpen }: HeaderProps) {
         </button>
 
         {/* Theme Toggle */}
-        <button
-       
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 group"
-          title="Toggle theme"
-        >
-          <div className="h-5 w-5 text-gray-600 dark:text-gray-300 transition-all duration-200 group-hover:scale-110">
-            <span className="dark:hidden">🌙</span>
-            <span className="hidden dark:inline">☀️</span>
-          </div>
-        </button>
+
 
         {/* Settings */}
         <button
