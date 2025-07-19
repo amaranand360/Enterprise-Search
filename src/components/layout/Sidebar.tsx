@@ -7,6 +7,7 @@ import { ALL_TOOLS, TOOL_CATEGORIES } from '@/lib/config';
 import { IconRenderer } from '@/components/ui/IconRenderer';
 import { Tool } from '@/types';
 import { ConnectionModal } from '@/components/connections/ConnectionModal';
+import { GoogleQuickActions } from '@/components/integrations/GoogleQuickActions';
 import { demoConnectorManager } from '@/services/demo/DemoConnectorManager';
 import { connectionStatusService } from '@/services/ConnectionStatusService';
 
@@ -260,6 +261,18 @@ function SearchSidebarContent({
 
   return (
     <div className="space-y-6">
+      {/* Google Quick Actions */}
+      <div>
+        <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+          Google Integration
+        </h3>
+        <GoogleQuickActions
+          onActionComplete={(action, success) => {
+            console.log(`Google action ${action} completed:`, success);
+          }}
+        />
+      </div>
+
       {/* Connected Tools */}
       {connectedTools.length > 0 && (
         <div>
