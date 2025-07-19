@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Search, Filter, SortAsc, Loader2, Lightbulb, Bot, Mic, TrendingUp, Clock, Zap, ArrowRight, ChevronDown, Cpu, Shield, BarChart3, ArrowUp } from 'lucide-react';
+import { Search, Filter, SortAsc, Loader2, Lightbulb, Bot, Mic, TrendingUp, Clock, Zap, ArrowRight, ChevronDown, Cpu, Shield, BarChart3, ArrowUp, Calendar } from 'lucide-react';
 import { useScrollAnimation, useStaggeredAnimation } from '@/hooks/useScrollAnimation';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import { SearchProcessing } from '@/components/ui/SearchProcessing';
@@ -18,6 +18,7 @@ import { ActionExecutor } from '@/components/actions/ActionExecutor';
 import { parseQuery, explainQuery } from '@/lib/queryParser';
 import { AIActionHandler } from '@/components/ai/AIActionHandler';
 import { demoConnectorManager } from '@/services/demo/DemoConnectorManager';
+import { CalendarAgentComponent } from '@/agents/calendar/CalendarAgentComponent';
 
 // AI Models for demo purposes (UI only - always uses gpt-4o-mini)
 const AI_MODELS = [
@@ -77,6 +78,7 @@ export function SearchInterface() {
   });
   const [showActionExecutor, setShowActionExecutor] = useState(false);
   const [currentAction, setCurrentAction] = useState<string>('');
+  const [showCalendarAgent, setShowCalendarAgent] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { addToHistory, getRecentSearches, getPopularSearches } = useSearchHistory();
@@ -433,6 +435,7 @@ export function SearchInterface() {
                         performSearch(query);
                       }
                     }}
+                    title="Search"
                     className="w-8 h-8 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600"
                   >
                     <ArrowUp className="h-4 w-4" />
@@ -683,7 +686,11 @@ export function SearchInterface() {
               >
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white transition-colors duration-200 group-hover:text-purple-600 dark:group-hover:text-purple-400">Recent Actions</h3>
-                  <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 hover:underline">
+                  <button 
+                    aria-label="View all recent actions"
+                    title="View all recent actions"
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 hover:underline"
+                  >
                     View All
                   </button>
                 </div>
@@ -822,6 +829,8 @@ export function SearchInterface() {
                       performSearch(query);
                     }
                   }}
+                  title="Search"
+                  aria-label="Search"
                   className="mr-2 w-8 h-8 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600"
                 >
                   <ArrowUp className="h-4 w-4" />
@@ -879,6 +888,14 @@ export function SearchInterface() {
                   Execute Action
                 </button>
               )}
+
+              <button
+                onClick={() => setShowCalendarAgent(true)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+              >
+                <Calendar className="h-4 w-4" />
+                Calendar Agent
+              </button>
             </div>
 
             {results.length > 0 && (
@@ -962,6 +979,12 @@ export function SearchInterface() {
           setIsLoading(false);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
+      />
+
+      {/* Calendar Agent */}
+      <CalendarAgentComponent
+        isOpen={showCalendarAgent}
+        onClose={() => setShowCalendarAgent(false)}
       />
     </div>
   );

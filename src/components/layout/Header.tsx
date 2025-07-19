@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Menu, Bell, Settings, User, Wifi, WifiOff, AlertTriangle } from 'lucide-react';
+import { Menu, Bell, Settings, User, Wifi, WifiOff, AlertTriangle, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ConnectionStatusDashboard } from '@/components/connections/ConnectionStatusDashboard';
 import { ConnectionSettings } from '@/components/connections/ConnectionSettings';
 import { connectionStatusService, ConnectionStats } from '@/services/ConnectionStatusService';
 
-interface HeaderProps {}
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
 
-export function Header({}: HeaderProps) {
+export function Header({ onMenuClick }: HeaderProps) {
   const [showConnectionDashboard, setShowConnectionDashboard] = useState(false);
   const [showConnectionSettings, setShowConnectionSettings] = useState(false);
   const [connectionStats, setConnectionStats] = useState<ConnectionStats | null>(null);
@@ -92,6 +94,18 @@ export function Header({}: HeaderProps) {
           </span>
         </button>
 
+        {/* Calendar Test */}
+        <a
+          href="/test-calendar"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200 text-blue-600 dark:text-blue-400"
+          title="Test Calendar Integration"
+        >
+          <Calendar className="h-4 w-4" />
+          <span className="hidden sm:block text-sm">Test Calendar</span>
+        </a>
+
         {/* Notifications */}
         <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 relative">
           <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300 transition-colors duration-200" />
@@ -122,7 +136,10 @@ export function Header({}: HeaderProps) {
               amar.kumar@company.com
             </p>
           </div>
-          <button className="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
+          <button 
+            className="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+            title="User Profile"
+          >
             <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
           </button>
         </div>

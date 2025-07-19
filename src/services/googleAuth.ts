@@ -1,41 +1,51 @@
 'use client';
 
-import { GoogleCredentials } from '@/types';
+import { GoogleCredentials } from '../types';
 
-export class GoogleAuthService {
-  private static instance: GoogleAuthService;
+export interface GoogleUser {
+  id: string;
+  email: string;
+  name: string;
+  picture?: string;
+}
+
+declare global {
+  interface Window {
+    google: any;
+    gapi: any;
+  }
+}
+
+class GoogleAuthService {
   private credentials: GoogleCredentials | null = null;
   private isInitialized = false;
-
-  private constructor() {}
-
-  static getInstance(): GoogleAuthService {
-    if (!GoogleAuthService.instance) {
-      GoogleAuthService.instance = new GoogleAuthService();
-    }
-    return GoogleAuthService.instance;
-  }
+  private tokenClient: any = null;
 
   async initialize(): Promise<void> {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {
+      return;
+    }
 
-    // Load Google API script
-    await this.loadGoogleAPI();
-    
-    // Initialize Google Auth
-    await this.initializeGoogleAuth();
-    
-    this.isInitialized = true;
+    try {
+      await this.loadGoogleAPI();
+      await this.loadGoogleIdentityServices();
+      await this.initializeGoogleAuth();
+      this.initializeTokenClient();
+      this.isInitialized = true;
+      console.log('Google Auth initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize Google Auth:', error);
+      throw error;
+    }
   }
 
   private loadGoogleAPI(): Promise<void> {
     return new Promise((resolve, reject) => {
       if (typeof window === 'undefined') {
-        reject(new Error('Google API can only be loaded in browser'));
+        reject(new Error('Window is not available'));
         return;
       }
 
-      // Check if already loaded
       if (window.gapi) {
         resolve();
         return;
@@ -49,6 +59,26 @@ export class GoogleAuthService {
     });
   }
 
+  private loadGoogleIdentityServices(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (typeof window === 'undefined') {
+        reject(new Error('Window is not available'));
+        return;
+      }
+
+      if (window.google) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load Google Identity Services'));
+      document.head.appendChild(script);
+    });
+  }
+
   private initializeGoogleAuth(): Promise<void> {
     return new Promise((resolve, reject) => {
       if (typeof window === 'undefined' || !window.gapi) {
@@ -56,28 +86,60 @@ export class GoogleAuthService {
         return;
       }
 
-      window.gapi.load('auth2', () => {
-        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-        if (!clientId) {
-          reject(new Error('Google Client ID not configured'));
+      window.gapi.load('client', async () => {
+        try {
+          await window.gapi.client.init({
+            apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
+            discoveryDocs: [
+              'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest',
+              'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest',
+              'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
+            ]
+          });
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+  }
+
+  private initializeTokenClient(): void {
+    if (typeof window === 'undefined' || !window.google) {
+      throw new Error('Google Identity Services not available');
+    }
+
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      throw new Error('Google Client ID not configured');
+    }
+
+    this.tokenClient = window.google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: [
+        'https://www.googleapis.com/auth/calendar',
+        'https://www.googleapis.com/auth/calendar.events',
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/userinfo.profile'
+      ].join(' '),
+      callback: (response: any) => {
+        if (response.error) {
+          console.error('Token request failed:', response.error);
           return;
         }
+        
+        const credentials: GoogleCredentials = {
+          access_token: response.access_token,
+          refresh_token: response.refresh_token || '',
+          scope: response.scope || '',
+          token_type: response.token_type || 'Bearer',
+          expiry_date: Date.now() + (response.expires_in * 1000)
+        };
 
-        window.gapi.auth2.init({
-          client_id: clientId,
-          scope: [
-            'https://www.googleapis.com/auth/gmail.readonly',
-            'https://www.googleapis.com/auth/gmail.compose',
-            'https://www.googleapis.com/auth/calendar',
-            'https://www.googleapis.com/auth/drive.readonly',
-            'https://www.googleapis.com/auth/spreadsheets',
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile'
-          ].join(' ')
-        }).then(() => {
-          resolve();
-        }).catch(reject);
-      });
+        this.credentials = credentials;
+        this.saveCredentials(credentials);
+        console.log('Google OAuth successful:', credentials);
+      }
     });
   }
 
@@ -87,145 +149,157 @@ export class GoogleAuthService {
     }
 
     return new Promise((resolve, reject) => {
-      if (typeof window === 'undefined' || !window.gapi) {
-        reject(new Error('Google API not available'));
+      if (!this.tokenClient) {
+        reject(new Error('Google token client not initialized'));
         return;
       }
 
-      const authInstance = window.gapi.auth2.getAuthInstance();
-      if (!authInstance) {
-        reject(new Error('Google Auth not initialized'));
-        return;
-      }
-
-      authInstance.signIn().then((googleUser: any) => {
-        const authResponse = googleUser.getAuthResponse();
+      // Store resolve function to call it from the token client callback
+      this.tokenClient.callback = (response: any) => {
+        if (response.error) {
+          console.error('Google sign-in failed:', response.error);
+          reject(new Error(`Google sign-in failed: ${response.error}`));
+          return;
+        }
+        
         const credentials: GoogleCredentials = {
-          access_token: authResponse.access_token,
-          refresh_token: authResponse.refresh_token || '',
-          scope: authResponse.scope,
-          token_type: authResponse.token_type,
-          expiry_date: authResponse.expires_at
+          access_token: response.access_token,
+          refresh_token: response.refresh_token || '',
+          scope: response.scope || '',
+          token_type: response.token_type || 'Bearer',
+          expiry_date: Date.now() + (response.expires_in * 1000)
         };
 
         this.credentials = credentials;
         this.saveCredentials(credentials);
+        console.log('Google OAuth successful');
         resolve(credentials);
-      }).catch(reject);
+      };
+
+      // Request access token
+      this.tokenClient.requestAccessToken();
     });
   }
 
   async signOut(): Promise<void> {
-    if (typeof window === 'undefined' || !window.gapi) {
+    if (typeof window === 'undefined' || !window.google) {
       return;
     }
 
-    const authInstance = window.gapi.auth2.getAuthInstance();
-    if (authInstance) {
-      await authInstance.signOut();
+    try {
+      if (this.credentials?.access_token) {
+        window.google.accounts.oauth2.revoke(this.credentials.access_token);
+      }
+      this.credentials = null;
+      this.clearCredentials();
+      console.log('Google sign-out successful');
+    } catch (error) {
+      console.error('Error during sign-out:', error);
     }
-
-    this.credentials = null;
-    this.clearCredentials();
-  }
-
-  isSignedIn(): boolean {
-    if (typeof window === 'undefined' || !window.gapi) {
-      return false;
-    }
-
-    const authInstance = window.gapi.auth2.getAuthInstance();
-    return authInstance ? authInstance.isSignedIn.get() : false;
   }
 
   getCredentials(): GoogleCredentials | null {
-    if (this.credentials) {
-      return this.credentials;
+    if (!this.credentials) {
+      this.credentials = this.loadCredentials();
     }
+    return this.credentials;
+  }
 
-    // Try to load from localStorage
-    const stored = this.loadCredentials();
-    if (stored && stored.expiry_date > Date.now()) {
-      this.credentials = stored;
-      return stored;
+  isSignedIn(): boolean {
+    const credentials = this.getCredentials();
+    if (!credentials) return false;
+    
+    // Check if token is expired
+    if (credentials.expiry_date && credentials.expiry_date < Date.now()) {
+      return false;
     }
-
-    return null;
+    
+    return !!credentials.access_token;
   }
 
   private saveCredentials(credentials: GoogleCredentials): void {
-    try {
+    if (typeof window !== 'undefined') {
       localStorage.setItem('google_credentials', JSON.stringify(credentials));
-    } catch (error) {
-      console.error('Failed to save Google credentials:', error);
     }
   }
 
   private loadCredentials(): GoogleCredentials | null {
+    if (typeof window === 'undefined') return null;
+    
     try {
       const stored = localStorage.getItem('google_credentials');
-      return stored ? JSON.parse(stored) : null;
+      if (stored) {
+        const credentials = JSON.parse(stored);
+        // Check if token is expired
+        if (credentials.expiry_date && credentials.expiry_date < Date.now()) {
+          this.clearCredentials();
+          return null;
+        }
+        return credentials;
+      }
     } catch (error) {
-      console.error('Failed to load Google credentials:', error);
+      console.error('Error loading stored credentials:', error);
+      this.clearCredentials();
+    }
+    
+    return null;
+  }
+
+  private clearCredentials(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('google_credentials');
+    }
+  }
+
+  async getCurrentUser(): Promise<GoogleUser | null> {
+    const credentials = this.getCredentials();
+    if (!credentials?.access_token) {
+      return null;
+    }
+
+    try {
+      if (!window.gapi || !window.gapi.client) {
+        throw new Error('Google API client not initialized');
+      }
+
+      // Set the access token
+      window.gapi.client.setToken({
+        access_token: credentials.access_token
+      });
+
+      // Load the OAuth2 API
+      await new Promise((resolve, reject) => {
+        window.gapi.client.load('oauth2', 'v2', () => resolve(true));
+      });
+
+      const response = await window.gapi.client.oauth2.userinfo.get();
+      const userInfo = response.result;
+
+      return {
+        id: userInfo.id,
+        email: userInfo.email,
+        name: userInfo.name,
+        picture: userInfo.picture
+      };
+    } catch (error) {
+      console.error('Error getting current user:', error);
       return null;
     }
   }
 
-  private clearCredentials(): void {
-    try {
-      localStorage.removeItem('google_credentials');
-    } catch (error) {
-      console.error('Failed to clear Google credentials:', error);
+  async refreshToken(): Promise<GoogleCredentials | null> {
+    // Note: For web applications, we typically don't have refresh tokens
+    // Instead, we should re-authenticate when the token expires
+    if (!this.isSignedIn()) {
+      try {
+        return await this.signIn();
+      } catch (error) {
+        console.error('Error refreshing token:', error);
+        return null;
+      }
     }
-  }
-
-  async refreshToken(): Promise<GoogleCredentials> {
-    if (!this.credentials || !this.credentials.refresh_token) {
-      throw new Error('No refresh token available');
-    }
-
-    // In a real implementation, you would call your backend to refresh the token
-    // For demo purposes, we'll simulate a refresh
-    const refreshedCredentials: GoogleCredentials = {
-      ...this.credentials,
-      access_token: 'new_access_token_' + Date.now(),
-      expiry_date: Date.now() + 3600000 // 1 hour from now
-    };
-
-    this.credentials = refreshedCredentials;
-    this.saveCredentials(refreshedCredentials);
-    return refreshedCredentials;
-  }
-
-  async makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
-    const credentials = this.getCredentials();
-    if (!credentials) {
-      throw new Error('Not authenticated');
-    }
-
-    // Check if token is expired
-    if (credentials.expiry_date <= Date.now()) {
-      await this.refreshToken();
-    }
-
-    const headers = {
-      ...options.headers,
-      'Authorization': `Bearer ${credentials.access_token}`,
-      'Content-Type': 'application/json'
-    };
-
-    return fetch(url, {
-      ...options,
-      headers
-    });
+    return this.getCredentials();
   }
 }
 
-// Global type declarations for Google API
-declare global {
-  interface Window {
-    gapi: any;
-  }
-}
-
-export const googleAuth = GoogleAuthService.getInstance();
+export const googleAuth = new GoogleAuthService();

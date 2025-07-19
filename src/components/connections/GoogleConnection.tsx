@@ -73,12 +73,22 @@ export function GoogleConnection({ isOpen, onClose, onConnectionComplete }: Goog
   const handleGoogleSignIn = async () => {
     try {
       setStep('testing');
+      console.log('Starting Google sign-in process...');
+      
+      // Initialize Google Auth if not already done
+      await googleAuth.initialize();
+      
+      // Perform sign-in
       const creds = await googleAuth.signIn();
+      console.log('Google sign-in successful:', creds);
+      
       setCredentials(creds);
       await testServices();
     } catch (error) {
       console.error('Google sign-in failed:', error);
       setStep('error');
+      // Show more specific error message
+      alert(`Google sign-in failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
